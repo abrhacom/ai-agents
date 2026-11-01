@@ -24,7 +24,7 @@ Every service kit is the file `<service>/AGENTS.md`. These are the kits that exi
 
 | Service | Kit to open | What the API does | Base URL |
 |---|---|---|---|
-| **IaaS** (Cloud Server / VM) | [`iaas/AGENTS.md`](iaas/AGENTS.md) | Create and manage VMs: regions, sizes, images, VPCs, firewalls, SSH keys, actions | `https://my.abrha.net/cserver/api/public/v1/` (same API on `https://my.parspack.com/cserver`) |
+| **IaaS** (Cloud Server / VM) | [`iaas/AGENTS.md`](iaas/AGENTS.md) | Create and manage VMs: regions, sizes, images, VPCs, firewalls, SSH keys, actions | `https://my.parspack.com/cserver/api/public/v1/` |
 | **CDN** (CDN and DNS) | [`cdn/AGENTS.md`](cdn/AGENTS.md) | Order zones, manage DNS records, cache, firewall, SSL, load balancers, page/origin/transform rules, bulk lists | `https://my.parspack.com/cdnapi/` |
 
 Examples of how to pick a kit:
