@@ -5,17 +5,63 @@ needs to **call** the `my.abrha.net` public API — not to run this repo's test
 suite. If you were pointed at this repo to understand the API and integrate
 against it, start here.
 
-The machine-readable contract is
-[`server-api.openapi`](server-api.openapi) (OpenAPI 3.0.3), generated from the
-server code. **Load it before generating any request** — it is the only source
-for exact field names, types and enum values, and this file does not repeat
-them.
+The machine-readable contract is an OpenAPI 3.0.3 spec generated from the
+server code. It is **not** in this repository, because it changes more often
+than this file does. Fetch it from:
+
+```
+https://docs.parspack.com/api/all-api.openapi
+```
+
+**Load it before generating any request** — it is the only source for exact
+field names, types and enum values, and this file does not repeat them. See
+["The spec"](#the-spec) below for how to use it without wasting your context.
 
 It is not, however, correct everywhere. Where this file and the spec disagree,
 the spec wins **except** for the specific defects listed under
 ["Where the spec is wrong"](#where-the-spec-is-wrong) — those are confirmed
 against the running server, and following the spec there will produce failing
 requests.
+
+## The spec
+
+Four facts about the spec file that will trip you up if you do not know them:
+
+1. **It is one merged file for three products, not just this API.** It
+   carries ~100 paths and ~160 operations for *Cloud Server*, *CDN* and *SSL*
+   (see its `x-tagGroups`). Only the **Cloud Server** group is this API. Every
+   path block declares its own `servers:` entry; a path belongs to this API
+   only if that entry is `https://my.parspack.com/cserver`. Do not filter by
+   path prefix alone: the SSL product also uses `/api/public/v1/...` paths
+   (`products`, `countries`, `states`, `order/...`) under the `sslv2` server,
+   and none of those exist on this API.
+2. **It is about 1.3 MB of YAML (~35,000 lines).** Never load the whole file
+   into your context and never paste it into a prompt. Download it to disk
+   once, then search it per operation and read only the block you need:
+
+   ```bash
+   curl -sSL -o /tmp/all-api.openapi https://docs.parspack.com/api/all-api.openapi
+   grep -n '^  /api/public/v1/vms' /tmp/all-api.openapi   # find the path block
+   sed -n '8019,8300p' /tmp/all-api.openapi                # read just that block
+   ```
+
+   The line numbers change with every update to the spec — always `grep`
+   first, never reuse a number from an earlier session.
+3. **Its paths are written differently from this file.** The spec writes the
+   full path (`/api/public/v1/vms`) against the server
+   `https://my.parspack.com/cserver`. This file writes the base URL
+   `https://my.abrha.net/cserver/api/public/v1/` plus a relative path (`vms`).
+   They are the same request. To look up an endpoint from this file in the
+   spec, search for `/api/public/v1/` + the relative path. The spec only
+   names the `my.parspack.com` host; `my.abrha.net` serves the identical API,
+   see below.
+4. **It is served with `Content-Type: application/octet-stream`** and no
+   `.yaml` extension. Tools that pick a parser from the content type or the
+   extension will treat it as a binary blob; parse it as YAML explicitly.
+
+If you cannot reach the URL (no network, blocked egress), stop and ask the
+operator for a copy of the file. Do not guess field names from this file's
+examples or from another provider's API.
 
 ## What this API is
 
@@ -133,7 +179,7 @@ quota, capacity and bad-image failures, so do not treat a single non-2xx as
 
 Every operation the spec defines. Paths are relative to the base URL — no
 leading slash, per rule 2 above. This table is a map so you know what exists;
-request and response shapes live in the YAML.
+request and response shapes live in the spec — see ["The spec"](#the-spec).
 
 ### Catalog — read these before creating anything
 
@@ -260,7 +306,7 @@ field; a failed assign surfaces as a non-2xx on the `POST` itself.
 ## Gotchas that will break a naive client
 
 These are the traps a generic client built purely from guessing conventions
-will fall into. Full detail is in the YAML; this is the "read this or you
+will fall into. Full detail is in the spec; this is the "read this or you
 will lose an hour" version.
 
 | Area | Gotcha |
@@ -332,9 +378,12 @@ correctly.
 
 ## Where the spec is wrong
 
-`server-api.openapi` is generated from the server code, so its paths, methods
-and enums are reliable. These specific items are not — they have been checked
-against the running server, and this file overrides the spec for them:
+The spec is generated from the server code, so its paths, methods and enums
+are reliable. These specific items are not — they have been checked against
+the running server, and this file overrides the spec for them. The spec is
+updated independently of this file, so if an item below no longer matches
+what the spec says, the spec was probably fixed in the meantime; verify
+against the server before applying the override.
 
 | Spec says | Reality |
 | --- | --- |
@@ -358,5 +407,6 @@ attachment endpoints are `204` with an empty body. Treat any 2xx as success
 rather than matching an exact code.
 
 If you discover a new field, error shape, or behavior while integrating, extend
-`server-api.openapi` and this file rather than keeping private undocumented
-knowledge.
+this file and tell the operator so the spec gets fixed at its source, rather
+than keeping private undocumented knowledge. You cannot edit the spec: it is
+generated from the server code and served from the docs site.
