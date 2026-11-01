@@ -1,7 +1,7 @@
-# AGENTS.md — Abrha Cloud Public API, for AI agents
+# AGENTS.md — Parspack Cloud Server Public API, for AI agents
 
 This file is the entry point for an AI agent (or any automated client) that
-needs to **call** the `my.abrha.net` public API — not to run this repo's test
+needs to **call** the `my.parspack.com` public API — not to run this repo's test
 suite. If you were pointed at this repo to understand the API and integrate
 against it, start here.
 
@@ -50,11 +50,9 @@ Four facts about the spec file that will trip you up if you do not know them:
 3. **Its paths are written differently from this file.** The spec writes the
    full path (`/api/public/v1/vms`) against the server
    `https://my.parspack.com/cserver`. This file writes the base URL
-   `https://my.abrha.net/cserver/api/public/v1/` plus a relative path (`vms`).
-   They are the same request. To look up an endpoint from this file in the
-   spec, search for `/api/public/v1/` + the relative path. The spec only
-   names the `my.parspack.com` host; `my.abrha.net` serves the identical API,
-   see below.
+   `https://my.parspack.com/cserver/api/public/v1/` plus a relative path
+   (`vms`). They are the same request. To look up an endpoint from this file
+   in the spec, search for `/api/public/v1/` + the relative path.
 4. **It is served with `Content-Type: application/octet-stream`** and no
    `.yaml` extension. Tools that pick a parser from the content type or the
    extension will treat it as a binary blob; parse it as YAML explicitly.
@@ -71,7 +69,7 @@ A DigitalOcean-style cloud provider API: pick a **region**, a **size**
 long-running returns an **action** you poll to completion.
 
 ```
-Base URL : https://my.abrha.net/cserver/api/public/v1/
+Base URL : https://my.parspack.com/cserver/api/public/v1/
 Auth     : Authorization: Bearer <token>
 Content  : application/json requests and responses
 ```
@@ -79,10 +77,6 @@ Content  : application/json requests and responses
 Bearer is the only scheme the server accepts. `Basic` is not supported — the
 token is read from the `Authorization: Bearer` header and nothing else, so a
 `Basic` credential is treated as no credential at all.
-
-The spec's `servers` entry says `https://my.parspack.com/cserver`, which is the
-same API under a different brand. If you were given a token for one of the two
-hosts, use that host; the paths below are identical on both.
 
 ## Before you call anything
 
